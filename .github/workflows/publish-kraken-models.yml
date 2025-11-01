@@ -28,7 +28,7 @@ jobs:
 
       - name: Set project path
         id: vars
-        run: echo "project=kraken-models/src/Kraken.Models/Kraken.Models.csproj" >> $GITHUB_OUTPUT
+        run: echo "project=src/Kraken.Models/Kraken.Models.csproj" >> $GITHUB_OUTPUT
 
       - name: Bump version (patch)
         id: bump
@@ -78,4 +78,3 @@ jobs:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           dotnet nuget push ./nupkgs/*.nupkg --api-key $NUGET_AUTH_TOKEN --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate
-
