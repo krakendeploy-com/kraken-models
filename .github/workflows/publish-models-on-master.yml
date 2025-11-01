@@ -45,11 +45,20 @@ jobs:
           git tag -f "v${{ steps.ver.outputs.value }}"
           git push -f origin "v${{ steps.ver.outputs.value }}"
 
-      - name: Restore, build and pack
+      - name: Restore
         run: |
           proj="src/Kraken.Models/Kraken.Models.csproj"
           dotnet restore "$proj"
-          dotnet pack "$proj" -c Release -o ./nupkgs /p:PackageVersion=${{ steps.ver.outputs.value }}
+
+      - name: Build (Release)
+        run: |
+          proj="src/Kraken.Models/Kraken.Models.csproj"
+          dotnet build "$proj" -c Release --no-restore
+
+      - name: Pack (use built output)
+        run: |
+          proj="src/Kraken.Models/Kraken.Models.csproj"
+          dotnet pack "$proj" -c Release --no-build -o ./nupkgs /p:PackageVersion=${{ steps.ver.outputs.value }}
 
       - name: Publish to GitHub Packages
         env:
