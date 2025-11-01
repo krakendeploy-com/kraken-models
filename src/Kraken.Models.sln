@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kraken.Models", "Kraken.Models\Kraken.Models.csproj", "{6BB0C5CE-FE16-4D4A-BD30-B8C28B149207}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6BB0C5CE-FE16-4D4A-BD30-B8C28B149207}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BB0C5CE-FE16-4D4A-BD30-B8C28B149207}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BB0C5CE-FE16-4D4A-BD30-B8C28B149207}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BB0C5CE-FE16-4D4A-BD30-B8C28B149207}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

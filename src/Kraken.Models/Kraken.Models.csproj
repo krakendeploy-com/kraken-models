@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <!-- NuGet metadata -->
+        <PackageId>Kraken.Models</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Kraken Deploy</Authors>
+        <Company>Kraken Deploy</Company>
+        <Description>Models shared across Kraken API projects</Description>
+        <RepositoryUrl>https://github.com/krakendeploy-com/kraken-agent</RepositoryUrl>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <RootNamespace>Kraken.Shared</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.5.0"/>
+    </ItemGroup>
+
+</Project>
