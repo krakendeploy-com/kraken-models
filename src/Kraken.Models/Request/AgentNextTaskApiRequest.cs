@@ -15,4 +15,5 @@ public class AgentNextTaskApiRequest
     public double DiskFreeGb { get; set; }
     public string? OsVersion { get; set; }
     public string? AgentUptime { get; set; }
+    
 }
