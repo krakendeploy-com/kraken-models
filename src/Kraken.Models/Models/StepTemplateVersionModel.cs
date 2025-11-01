@@ -1,4 +1,4 @@
-﻿namespace Kraken.Shared.Models;
+﻿namespace Kraken.Models.Models;
 
 public class StepTemplateVersionModel
 {

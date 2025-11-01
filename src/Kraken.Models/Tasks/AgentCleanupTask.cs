@@ -1,6 +1,6 @@
-﻿using Kraken.Shared.Models;
+﻿using Kraken.Models.Models;
 
-namespace Kraken.Shared.Tasks;
+namespace Kraken.Models.Tasks;
 
 public class AgentCleanupTask : IAgentTask
 {

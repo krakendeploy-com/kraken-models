@@ -1,4 +1,4 @@
-namespace Kraken.Shared.Response;
+namespace Kraken.Models.Response;
 
 public record ApiResult<T>(
     T? Data,

@@ -1,6 +1,6 @@
-﻿using Kraken.Shared.Enums;
+﻿using Kraken.Models.Enums;
 
-namespace Kraken.Shared.Request;
+namespace Kraken.Models.Request;
 
 public class AgentNextTaskApiRequest
 {

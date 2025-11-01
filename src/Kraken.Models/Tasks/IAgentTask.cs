@@ -1,4 +1,4 @@
-﻿namespace Kraken.Shared.Tasks;
+﻿namespace Kraken.Models.Tasks;
 
 public interface IAgentTask
 {

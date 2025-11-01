@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
-using Kraken.Shared.Models;
+using Kraken.Models.Models;
 
-namespace Kraken.Shared;
+namespace Kraken.Models;
 
 public class VariableResolver
 {

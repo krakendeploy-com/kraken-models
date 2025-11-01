@@ -1,4 +1,4 @@
-namespace Kraken.Shared.Enums;
+namespace Kraken.Models.Enums;
 
 public enum VariableValueType
 {

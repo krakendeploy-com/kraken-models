@@ -1,6 +1,6 @@
-﻿using Kraken.Shared.Enums;
+﻿using Kraken.Models.Enums;
 
-namespace Kraken.Shared.Response;
+namespace Kraken.Models.Response;
 
 public class AgentTaskResponse
 {

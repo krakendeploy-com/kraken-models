@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Kraken.Shared.Request;
+namespace Kraken.Models.Request;
 
 public class RegisterAgentApiRequest
 {

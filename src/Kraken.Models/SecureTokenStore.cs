@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Kraken.Shared;
+namespace Kraken.Models;
 
 public static class SecureTokenStore
 {

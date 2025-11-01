@@ -1,5 +1,5 @@
-﻿using Kraken.Shared.Enums;
+﻿using Kraken.Models.Enums;
 
-namespace Kraken.Shared.Models;
+namespace Kraken.Models.Models;
 
 public record VariableValueModel(string Value, VariableValueType Type);

@@ -15,7 +15,7 @@
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <RootNamespace>Kraken.Shared</RootNamespace>
+        <RootNamespace>Kraken.Models</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
