@@ -1,0 +1,81 @@
+name: Publish Kraken.Models Package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'kraken-models/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Set project path
+        id: vars
+        run: echo "project=kraken-models/src/Kraken.Models/Kraken.Models.csproj" >> $GITHUB_OUTPUT
+
+      - name: Bump version (patch)
+        id: bump
+        shell: pwsh
+        run: |
+          $proj = '${{ steps.vars.outputs.project }}'
+          Write-Host "Project file: $proj"
+          if (-not (Test-Path $proj)) { throw "Project file not found: $proj" }
+
+          [xml]$xml = Get-Content $proj
+          # Find a PropertyGroup that already has a Version element, otherwise use the first PropertyGroup
+          $pg = $xml.Project.PropertyGroup | Where-Object { $_.Version }
+          if (-not $pg) { $pg = $xml.Project.PropertyGroup[0]; $pg.AppendChild($xml.CreateElement('Version')) | Out-Null }
+
+          $current = $pg.Version.'#text'
+          if ([string]::IsNullOrWhiteSpace($current)) { $current = '0.1.0' }
+          Write-Host "Current version: $current"
+
+          $parts = $current.Split('.')
+          while ($parts.Length -lt 3) { $parts += '0' }
+          $patch = [int]$parts[2] + 1
+          $newVersion = "$($parts[0]).$($parts[1]).$patch"
+
+          $pg.Version = $newVersion
+          $xml.Save($proj)
+
+          Write-Host "Bumped to $newVersion"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "new_version=$newVersion"
+
+      - name: Commit version bump and tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ${{ steps.vars.outputs.project }}
+          git commit -m "chore(models): bump version to ${{ steps.bump.outputs.new_version }}" || echo "No changes to commit"
+          git tag "v${{ steps.bump.outputs.new_version }}" || echo "Tag exists"
+          git push origin HEAD:${{ github.ref_name }} --follow-tags
+
+      - name: Restore, build and pack
+        run: |
+          proj="${{ steps.vars.outputs.project }}"
+          dotnet restore $proj
+          dotnet pack $proj -c Release -o ./nupkgs /p:PackageVersion=${{ steps.bump.outputs.new_version }}
+
+      - name: Publish to GitHub Packages
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet nuget push ./nupkgs/*.nupkg --api-key $NUGET_AUTH_TOKEN --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate
+

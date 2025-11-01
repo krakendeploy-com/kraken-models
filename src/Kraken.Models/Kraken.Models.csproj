@@ -19,10 +19,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="LICENSE" Pack="true" PackagePath=""/>
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.5.0"/>
     </ItemGroup>
 
