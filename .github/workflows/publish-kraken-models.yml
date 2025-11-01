@@ -3,7 +3,7 @@ name: Publish Kraken.Models Package
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'kraken-models/**'
   workflow_dispatch:
