@@ -1,0 +1,58 @@
+name: Publish Kraken.Models (after merge)
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'src/Kraken.Models/**'
+
+permissions:
+  contents: write   # create & push tag
+  packages: write   # publish to GitHub Packages
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Read version from csproj
+        id: ver
+        shell: pwsh
+        run: |
+          $proj = "src/Kraken.Models/Kraken.Models.csproj"
+          if (-not (Test-Path $proj)) { throw "Project file not found: $proj" }
+          [xml]$xml = Get-Content $proj
+          $pg = $xml.Project.PropertyGroup | Where-Object { $_.Version }
+          if (-not $pg) { $pg = $xml.Project.PropertyGroup[0] }
+          $ver = $pg.Version.'#text'
+          if ([string]::IsNullOrWhiteSpace($ver)) { $ver = '0.1.0' }
+          Write-Host "Version: $ver"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "value=$ver"
+
+      - name: Create / update tag v<version>
+        run: |
+          git tag -f "v${{ steps.ver.outputs.value }}"
+          git push -f origin "v${{ steps.ver.outputs.value }}"
+
+      - name: Restore, build and pack
+        run: |
+          proj="src/Kraken.Models/Kraken.Models.csproj"
+          dotnet restore "$proj"
+          dotnet pack "$proj" -c Release -o ./nupkgs /p:PackageVersion=${{ steps.ver.outputs.value }}
+
+      - name: Publish to GitHub Packages
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet nuget push ./nupkgs/*.nupkg --api-key $NUGET_AUTH_TOKEN --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate
