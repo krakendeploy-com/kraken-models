@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'kraken-models/**'
+      - 'src/Kraken.Models/**'
   workflow_dispatch:
 
 permissions:
