@@ -1,0 +1,81 @@
+name: Bump Kraken.Models Version (PR)
+
+on:
+  # Run when model files change on any branch EXCEPT master
+  push:
+    branches-ignore:
+      - master
+    paths:
+      - 'src/Kraken.Models/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write        # commit & push branch
+  pull-requests: write   # create PR
+  packages: write        # (not used here, but harmless if you keep it)
+
+jobs:
+  bump-and-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Set project path
+        id: vars
+        run: echo "project=src/Kraken.Models/Kraken.Models.csproj" >> $GITHUB_OUTPUT
+
+      - name: Bump version (patch)
+        id: bump
+        shell: pwsh
+        run: |
+          $proj = '${{ steps.vars.outputs.project }}'
+          Write-Host "Project file: $proj"
+          if (-not (Test-Path $proj)) { throw "Project file not found: $proj" }
+
+          [xml]$xml = Get-Content $proj
+          $pg = $xml.Project.PropertyGroup | Where-Object { $_.Version }
+          if (-not $pg) { $pg = $xml.Project.PropertyGroup[0]; $pg.AppendChild($xml.CreateElement('Version')) | Out-Null }
+
+          $current = $pg.Version.'#text'
+          if ([string]::IsNullOrWhiteSpace($current)) { $current = '0.1.0' }
+          Write-Host "Current version: $current"
+
+          $parts = $current.Split('.')
+          while ($parts.Length -lt 3) { $parts += '0' }
+          $patch = [int]$parts[2] + 1
+          $newVersion = "$($parts[0]).$($parts[1]).$patch"
+
+          $pg.Version = $newVersion
+          $xml.Save($proj)
+
+          Write-Host "Bumped to $newVersion"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "new_version=$newVersion"
+
+      - name: Commit bump on feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="bump/models/${{ steps.bump.outputs.new_version }}"
+          git checkout -b "$BRANCH"
+          git add ${{ steps.vars.outputs.project }}
+          git commit -m "chore(models): bump version to ${{ steps.bump.outputs.new_version }}" || echo "No changes to commit"
+          git push origin HEAD
+
+      - name: Open PR to master
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "chore(models): bump version to ${{ steps.bump.outputs.new_version }}"
+          body: "Automated version bump"
+          branch: "bump/models/${{ steps.bump.outputs.new_version }}"
+          base: master
+          labels: "automation"
