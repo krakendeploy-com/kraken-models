@@ -46,16 +46,7 @@ jobs:
           dotnet build   src/Kraken.Models/Kraken.Models.csproj -c Release --no-restore
           dotnet pack    src/Kraken.Models/Kraken.Models.csproj -c Release -o ./artifacts --no-build
 
-      - name: Push to NuGet.org
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: >
-          dotnet nuget push "./artifacts/*.nupkg"
-          --api-key "$NUGET_API_KEY"
-          --source "https://api.nuget.org/v3/index.json"
-          --skip-duplicate
-
-      - name: (Optional) Push to GitHub Packages
+      - name: Push to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
