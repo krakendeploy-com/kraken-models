@@ -1,21 +1,21 @@
-name: Bump Kraken.Models Version (PR)
+name: Bump Kraken.Models on master
 
 on:
-  # Run when model files change on any branch EXCEPT master
   push:
-    branches-ignore:
-      - master
+    branches: [ master ]
     paths:
       - 'src/Kraken.Models/**'
   workflow_dispatch:
 
 permissions:
-  contents: write        # commit & push branch
-  pull-requests: write   # create PR
-  packages: write        # (not used here, but harmless if you keep it)
+  contents: write
+  pull-requests: write
+  packages: write
 
 jobs:
-  bump-and-pr:
+  bump:
+    # Do not run on the bump commit itself
+    if: ${{ !contains(github.event.head_commit.message, '[skip bump]') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -38,7 +38,6 @@ jobs:
         shell: pwsh
         run: |
           $proj = '${{ steps.vars.outputs.project }}'
-          Write-Host "Project file: $proj"
           if (-not (Test-Path $proj)) { throw "Project file not found: $proj" }
 
           [xml]$xml = Get-Content $proj
@@ -47,35 +46,29 @@ jobs:
 
           $current = $pg.Version.'#text'
           if ([string]::IsNullOrWhiteSpace($current)) { $current = '0.1.0' }
-          Write-Host "Current version: $current"
 
           $parts = $current.Split('.')
           while ($parts.Length -lt 3) { $parts += '0' }
           $patch = [int]$parts[2] + 1
           $newVersion = "$($parts[0]).$($parts[1]).$patch"
 
-          $pg.Version = $newVersion
-          $xml.Save($proj)
+          if ($newVersion -ne $current) {
+            $pg.Version = $newVersion
+            $xml.Save($proj)
+            "new_version=$newVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            Write-Host "Bumped $current -> $newVersion"
+          } else {
+            "new_version=$current" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            Write-Host "No bump necessary (already $current)"
+          }
 
-          Write-Host "Bumped to $newVersion"
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "new_version=$newVersion"
-
-      - name: Commit bump on feature branch
+      - name: Commit bump to master (mark commit to skip re-bump)
+        if: steps.bump.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          BRANCH="bump/models/${{ steps.bump.outputs.new_version }}"
-          git checkout -b "$BRANCH"
           git add ${{ steps.vars.outputs.project }}
-          git commit -m "chore(models): bump version to ${{ steps.bump.outputs.new_version }}" || echo "No changes to commit"
+          git commit -m "chore(models): bump version to ${{ steps.bump.outputs.new_version }} [skip bump]"
           git push origin HEAD
-
-      - name: Open PR to master
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: "chore(models): bump version to ${{ steps.bump.outputs.new_version }}"
-          body: "Automated version bump"
-          branch: "bump/models/${{ steps.bump.outputs.new_version }}"
-          base: master
-          labels: "automation"

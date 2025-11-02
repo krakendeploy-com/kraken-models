@@ -1,18 +1,18 @@
-name: Publish Kraken.Models (after merge)
+name: Publish Kraken.Models after bump
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'src/Kraken.Models/**'
+  workflow_run:
+    workflows: ["Bump Kraken.Models on master"]
+    types: [completed]
+    branches: [master]
 
 permissions:
-  contents: write   # create & push tag
-  packages: write   # publish to GitHub Packages
+  contents: write
+  packages: write
 
 jobs:
   publish:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -26,6 +26,12 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
+      - name: Ensure we have latest master (including bump commit)
+        run: |
+          git fetch origin master
+          git checkout master
+          git pull --ff-only origin master
+
       - name: Read version from csproj
         id: ver
         shell: pwsh
@@ -37,8 +43,8 @@ jobs:
           if (-not $pg) { $pg = $xml.Project.PropertyGroup[0] }
           $ver = $pg.Version.'#text'
           if ([string]::IsNullOrWhiteSpace($ver)) { $ver = '0.1.0' }
+          "value=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           Write-Host "Version: $ver"
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "value=$ver"
 
       - name: Create / update tag v<version>
         run: |
@@ -55,7 +61,7 @@ jobs:
           proj="src/Kraken.Models/Kraken.Models.csproj"
           dotnet build "$proj" -c Release --no-restore
 
-      - name: Pack (use built output)
+      - name: Pack
         run: |
           proj="src/Kraken.Models/Kraken.Models.csproj"
           dotnet pack "$proj" -c Release --no-build -o ./nupkgs /p:PackageVersion=${{ steps.ver.outputs.value }}
