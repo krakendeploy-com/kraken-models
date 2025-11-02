@@ -1,27 +1,51 @@
-name: Publish Kraken.Models
+# .github/workflows/release-on-master.yml
+name: Tag & publish on master merge
 on:
   push:
-    tags: [ 'v*.*.*' ]        # e.g., v1.2.3
+    branches: [ master ]
+    paths: [ 'src/Kraken.Models/**' ]
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
-  publish:
+  release:
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Determine next version (patch bump)
+        id: ver
+        shell: bash
+        run: |
+          latest=$(git tag -l 'v*.*.*' --sort=-v:refname | head -n1)
+          if [ -z "$latest" ]; then next="v1.0.0"; else
+            IFS='.' read -r major minor patch <<<"${latest#v}"
+            next="v${major}.${minor}.$((patch+1))"
+          fi
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+          echo "Next version: $next"
+
+      - name: Create local tag
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.ver.outputs.next }}" -m "Release ${{ steps.ver.outputs.next }}"
+
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-      - run: dotnet restore src/Kraken.Models/Kraken.Models.csproj
-      - run: dotnet build   src/Kraken.Models/Kraken.Models.csproj -c Release --no-restore
-      - run: dotnet pack    src/Kraken.Models/Kraken.Models.csproj -c Release -o ./artifacts --no-build
 
-      # Push to NuGet.org (requires NUGET_API_KEY repo secret)
+      - name: Restore/build/pack (MinVer sees the local tag)
+        run: |
+          dotnet restore src/Kraken.Models/Kraken.Models.csproj
+          dotnet build   src/Kraken.Models/Kraken.Models.csproj -c Release --no-restore
+          dotnet pack    src/Kraken.Models/Kraken.Models.csproj -c Release -o ./artifacts --no-build
+
       - name: Push to NuGet.org
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
@@ -31,8 +55,7 @@ jobs:
           --source "https://api.nuget.org/v3/index.json"
           --skip-duplicate
 
-      # Optional: also push to GitHub Packages
-      - name: Push to GitHub Packages
+      - name: (Optional) Push to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
@@ -40,3 +63,7 @@ jobs:
           --api-key "$GITHUB_TOKEN"
           --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
           --skip-duplicate
+
+      - name: Push tag to origin (after successful publish)
+        run: |
+          git push origin "${{ steps.ver.outputs.next }}"
