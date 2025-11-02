@@ -1,73 +1,42 @@
-name: Publish Kraken.Models after bump
-
+name: Publish Kraken.Models
 on:
-  workflow_run:
-    workflows: ["Bump Kraken.Models on master"]
-    types: [completed]
-    branches: [master]
+  push:
+    tags: [ 'v*.*.*' ]        # e.g., v1.2.3
 
 permissions:
-  contents: write
+  contents: read
   packages: write
 
 jobs:
   publish:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Setup .NET 9
-        uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
+      - run: dotnet restore src/Kraken.Models/Kraken.Models.csproj
+      - run: dotnet build   src/Kraken.Models/Kraken.Models.csproj -c Release --no-restore
+      - run: dotnet pack    src/Kraken.Models/Kraken.Models.csproj -c Release -o ./artifacts --no-build
 
-      - name: Ensure we have latest master (including bump commit)
-        run: |
-          git fetch origin master
-          git checkout master
-          git pull --ff-only origin master
-
-      - name: Read version from csproj
-        id: ver
-        shell: pwsh
-        run: |
-          $proj = "src/Kraken.Models/Kraken.Models.csproj"
-          if (-not (Test-Path $proj)) { throw "Project file not found: $proj" }
-          [xml]$xml = Get-Content $proj
-          $pg = $xml.Project.PropertyGroup | Where-Object { $_.Version }
-          if (-not $pg) { $pg = $xml.Project.PropertyGroup[0] }
-          $ver = $pg.Version.'#text'
-          if ([string]::IsNullOrWhiteSpace($ver)) { $ver = '0.1.0' }
-          "value=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-          Write-Host "Version: $ver"
-
-      - name: Create / update tag v<version>
-        run: |
-          git tag -f "v${{ steps.ver.outputs.value }}"
-          git push -f origin "v${{ steps.ver.outputs.value }}"
-
-      - name: Restore
-        run: |
-          proj="src/Kraken.Models/Kraken.Models.csproj"
-          dotnet restore "$proj"
-
-      - name: Build (Release)
-        run: |
-          proj="src/Kraken.Models/Kraken.Models.csproj"
-          dotnet build "$proj" -c Release --no-restore
-
-      - name: Pack
-        run: |
-          proj="src/Kraken.Models/Kraken.Models.csproj"
-          dotnet pack "$proj" -c Release --no-build -o ./nupkgs /p:PackageVersion=${{ steps.ver.outputs.value }}
-
-      - name: Publish to GitHub Packages
+      # Push to NuGet.org (requires NUGET_API_KEY repo secret)
+      - name: Push to NuGet.org
         env:
-          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          dotnet nuget push ./nupkgs/*.nupkg --api-key $NUGET_AUTH_TOKEN --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: >
+          dotnet nuget push "./artifacts/*.nupkg"
+          --api-key "$NUGET_API_KEY"
+          --source "https://api.nuget.org/v3/index.json"
+          --skip-duplicate
+
+      # Optional: also push to GitHub Packages
+      - name: Push to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          dotnet nuget push "./artifacts/*.nupkg"
+          --api-key "$GITHUB_TOKEN"
+          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+          --skip-duplicate

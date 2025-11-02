@@ -1,16 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>        
+        <Nullable>enable</Nullable>
+
         <PackageId>Kraken.Models</PackageId>
-        <Version>1.0.0</Version>
         <Authors>Kraken Deploy</Authors>
         <Company>Kraken Deploy</Company>
         <Description>Shared model library used by the Kraken Deploy Agent, CLI, and API.</Description>
         <RepositoryUrl>https://github.com/krakendeploy-com/kraken-models</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>        
+        <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -19,10 +18,19 @@
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <PackageTags>kraken;models;api;agent;cli</PackageTags>
+        <MinVerTagPrefix>v</MinVerTagPrefix>
+        <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
+        <MinVerBuildMetadata>AddCommitHeight</MinVerBuildMetadata>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+        <Deterministic>true</Deterministic>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="all"
+                          IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
         <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.5.0" />
     </ItemGroup>
-
 </Project>
