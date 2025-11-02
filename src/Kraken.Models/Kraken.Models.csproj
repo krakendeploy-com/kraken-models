@@ -19,7 +19,7 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <PackageTags>kraken;models;api;agent;cli</PackageTags>
         <MinVerTagPrefix>v</MinVerTagPrefix>
-        <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
+        <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
         <MinVerBuildMetadata>AddCommitHeight</MinVerBuildMetadata>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
