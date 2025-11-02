@@ -1,0 +1,40 @@
+# .github/workflows/auto-tag.yml
+name: Auto tag on master merge
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'src/Kraken.Models/**'
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    # Don’t tag if the ref is already a tag or it’s a bot release commit
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Determine next version (patch bump)
+        id: ver
+        shell: bash
+        run: |
+          latest=$(git tag -l 'v*.*.*' --sort=-v:refname | head -n1)
+          if [ -z "$latest" ]; then
+            next="v1.0.0"  # first release default
+          else
+            IFS='.' read -r major minor patch <<<"${latest#v}"
+            next="v${major}.${minor}.$((patch+1))"
+          fi
+          echo "next=$next" >> $GITHUB_OUTPUT
+          echo "Next version: $next"
+
+      - name: Create and push tag
+        env: { GIT_AUTHOR_NAME: github-actions[bot], GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com,
+               GIT_COMMITTER_NAME: github-actions[bot], GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com }
+        run: |
+          git tag -a "${{ steps.ver.outputs.next }}" -m "Release ${{ steps.ver.outputs.next }}"
+          git push origin "${{ steps.ver.outputs.next }}"
