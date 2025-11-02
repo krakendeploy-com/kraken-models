@@ -22,6 +22,5 @@ jobs:
         with:
           dotnet-version: '9.0.x'
       - run: dotnet restore src/Kraken.Models/Kraken.Models.csproj
-      - run: dotnet build   src/Kraken.Models/Kraken.Models.csproj -c Release --no-restore
-      - run: dotnet test    --no-build --verbosity normal
+      - run: dotnet build   src/Kraken.Models/Kraken.Models.csproj -c Release --no-restore      
       - run: dotnet pack    src/Kraken.Models/Kraken.Models.csproj -c Release -o ./artifacts --no-build

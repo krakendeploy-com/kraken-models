@@ -10,6 +10,7 @@ public static class SecureTokenStore
     {
         return Path.Combine(rootPath, "refresh.blob");
     }
+    
 
     public static void SaveRefreshToken(string platform, string rootPath, string refreshToken)
     {
