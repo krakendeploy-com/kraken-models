@@ -15,6 +15,7 @@ public class VariableResolver
     /// <summary>
     ///     Resolves variables in the provided script by recursively replacing any variable references
     ///     in the form $Kraken.Step.VarName, $Kraken.Project.VarName, $Kraken.Environment.VarName.
+    ///     Supported patterns: $Kraken.Step.*, $Kraken.Project.*, $Kraken.Environment.Name, $Kraken.Environment.Id
     /// </summary>
     /// <param name="script">The raw script to process and replace variables.</param>
     /// <returns>The script with variables replaced by their resolved values.</returns>
