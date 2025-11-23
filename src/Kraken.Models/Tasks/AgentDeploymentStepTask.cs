@@ -45,4 +45,21 @@ public class ArtifactMetadata
     public string Version { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;
     public string BasePath { get; set; } = string.Empty;
+    public ArtifactAuthenticationConfig? Authentication { get; set; }
+}
+
+public class ArtifactAuthenticationConfig
+{
+    /// <summary>
+    /// Authentication type: "internal", "none"
+    /// </summary>
+    public string Type { get; set; } = "none";
+    
+    /// <summary>
+    /// Additional configuration for the authentication type
+    /// For "jwt": uses agent's own token automatically
+    /// For "basic": expects Username and Password
+    /// For "apikey": expects ApiKey value
+    /// </summary>
+    public Dictionary<string, string>? Config { get; set; }
 }
