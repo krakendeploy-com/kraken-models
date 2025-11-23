@@ -11,6 +11,7 @@ public class AgentNextTaskApiRequest
 
     public double CpuUsagePercent { get; set; }
     public double RamUsageMb { get; set; }
+    public double RamTotalGb { get; set; }
     public double DiskTotalGb { get; set; }
     public double DiskFreeGb { get; set; }
     public string? OsVersion { get; set; }
