@@ -6,4 +6,3 @@ public class FileDownloadResult
     public string FileName { get; set; } = null!;
     public string ContentType { get; set; } = null!;
 }
-

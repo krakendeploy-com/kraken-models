@@ -51,15 +51,15 @@ public class ArtifactMetadata
 public class ArtifactAuthenticationConfig
 {
     /// <summary>
-    /// Authentication type: "internal", "none"
+    ///     Authentication type: "internal", "none"
     /// </summary>
     public string Type { get; set; } = "none";
-    
+
     /// <summary>
-    /// Additional configuration for the authentication type
-    /// For "jwt": uses agent's own token automatically
-    /// For "basic": expects Username and Password
-    /// For "apikey": expects ApiKey value
+    ///     Additional configuration for the authentication type
+    ///     For "jwt": uses agent's own token automatically
+    ///     For "basic": expects Username and Password
+    ///     For "apikey": expects ApiKey value
     /// </summary>
     public Dictionary<string, string>? Config { get; set; }
 }
